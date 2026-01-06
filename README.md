@@ -19,6 +19,6 @@
 [![build test deploy](https://github.com/bootique/bootique-opentelemetry/actions/workflows/maven.yml/badge.svg)](https://github.com/bootique/bootique-opentelemetry/actions/workflows/maven.yml)	
 [![Maven Central](https://img.shields.io/maven-central/v/io.bootique.opentelemetry/bootique-opentelemetry.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.opentelemetry/bootique-opentelemetry/)
 
-# bootique-otel
+# bootique-opentelemetry
 
 Provides OpenTelemetry integration for [Bootique](http://bootique.io).
