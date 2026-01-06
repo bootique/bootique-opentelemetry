@@ -1,0 +1,58 @@
+/*
+ * Licensed to ObjectStyle LLC under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ObjectStyle LLC licenses
+ * this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package io.bootique.otel;
+
+import io.bootique.BQModule;
+import io.bootique.ModuleCrate;
+import io.bootique.di.Binder;
+import io.bootique.di.Provides;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import jakarta.inject.Singleton;
+
+/**
+ * @since 4.0
+ */
+public class OpenTelemetryModule implements BQModule {
+
+    @Override
+    public ModuleCrate crate() {
+        return ModuleCrate.of(this)
+                .description("Integrates OpenTelemetry.")
+                .build();
+    }
+
+    @Override
+    public void configure(Binder binder) {
+    }
+
+    @Singleton
+    @Provides
+    OpenTelemetry provideOpenTelemetry() {
+
+        // If started via agent, use the global singleton. Otherwise, create a Bootique managed instance
+        return GlobalOpenTelemetry.isSet()
+                ? GlobalOpenTelemetry.get()
+
+                // TODO: OpenTelemetry instance is injectable throughout Bootique. Does it ever make sense to use
+                //  "buildAndRegisterGlobal()" and share it outside?
+                : OpenTelemetrySdk.builder().build();
+    }
+}
