@@ -16,8 +16,8 @@
   specific language governing permissions and limitations
   under the License.
   -->
-[![build test deploy](https://github.com/bootique/bootique-otel/actions/workflows/maven.yml/badge.svg)](https://github.com/bootique/bootique-otel/actions/workflows/maven.yml)	
-[![Maven Central](https://img.shields.io/maven-central/v/io.bootique.otel/bootique-otel.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.otel/bootique-otel/)
+[![build test deploy](https://github.com/bootique/bootique-opentelemetry/actions/workflows/maven.yml/badge.svg)](https://github.com/bootique/bootique-opentelemetry/actions/workflows/maven.yml)	
+[![Maven Central](https://img.shields.io/maven-central/v/io.bootique.opentelemetry/bootique-opentelemetry.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.opentelemetry/bootique-opentelemetry/)
 
 # bootique-otel
 
