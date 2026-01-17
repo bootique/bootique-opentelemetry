@@ -39,6 +39,10 @@ public class OpenTelemetryModule implements BQModule {
                 .build();
     }
 
+    public static OpenTelemetryModuleExtender extend(Binder binder) {
+        return new OpenTelemetryModuleExtender(binder);
+    }
+
     @Override
     public void configure(Binder binder) {
     }

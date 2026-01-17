@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ public class OtelExperimentsIT {
         SdkMeterProvider meterProvider = SdkMeterProvider
                 .builder()
                 .registerMetricReader(periodicReader)
+                .addResource(Resource.builder().put("service.name", "x").build())
                 .build();
 
         SdkTracerProvider tracerProvider = SdkTracerProvider

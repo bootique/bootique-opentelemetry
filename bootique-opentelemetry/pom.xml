@@ -45,6 +45,12 @@
             <artifactId>opentelemetry-sdk</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
         <!-- Unit test dependencies -->
         <dependency>
             <groupId>io.bootique</groupId>
