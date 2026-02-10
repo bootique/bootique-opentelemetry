@@ -18,11 +18,15 @@
  */
 package io.bootique.otel;
 
+import io.bootique.BQRuntime;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
+import io.bootique.meta.application.ApplicationMetadata;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +36,17 @@ public class OpenTelemetryModuleIT {
 
     @BQTestTool
     static final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
+
+    @Test
+    public void resource() {
+        BQRuntime runtime = testFactory.app().createRuntime();
+        ApplicationMetadata md = runtime.getInstance(ApplicationMetadata.class);
+        Resource resource = runtime.getInstance(Resource.class);
+
+        assertEquals(md.getName(), resource.getAttribute(AttributeKey.stringKey("service.name")));
+        assertEquals("opentelemetry", resource.getAttribute(AttributeKey.stringKey("telemetry.sdk.name")));
+        assertEquals("java", resource.getAttribute(AttributeKey.stringKey("telemetry.sdk.language")));
+    }
 
     @Test
     public void openTelemetry() {

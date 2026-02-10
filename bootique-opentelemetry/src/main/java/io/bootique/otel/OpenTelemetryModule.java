@@ -22,9 +22,13 @@ import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
+import io.bootique.meta.application.ApplicationMetadata;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import jakarta.inject.Singleton;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -44,6 +48,13 @@ public class OpenTelemetryModule implements BQModule {
 
     @Override
     public void configure(Binder binder) {
+    }
+
+    @Singleton
+    @Provides
+    Resource provideResource(ApplicationMetadata md) {
+        AttributeKey<String> nameKey = AttributeKey.stringKey(OpenTelemetryVar.OTEL_SERVICE_NAME.otelProperty);
+        return Resource.getDefault().merge(Resource.create(Attributes.of(nameKey, md.getName())));
     }
 
     @Singleton
