@@ -18,26 +18,17 @@
  */
 package io.bootique.otel;
 
-import io.bootique.junit5.BQTest;
-import io.bootique.junit5.BQTestFactory;
-import io.bootique.junit5.BQTestTool;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.bootique.annotation.BQConfig;
 import io.opentelemetry.api.OpenTelemetry;
-import org.junit.jupiter.api.Test;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 
-import static org.junit.jupiter.api.Assertions.*;
+/**
+ * @since 4.0
+ */
+@BQConfig
+public class OpenTelemetryFactory {
 
-@BQTest
-public class OpenTelemetryModuleIT {
-
-    @BQTestTool
-    static final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
-
-    @Test
-    public void openTelemetry() {
-        assertFalse(GlobalOpenTelemetry.isSet(), "OpenTelemetry agent should not be active");
-        OpenTelemetry otel = testFactory.app().createRuntime().getInstance(OpenTelemetry.class);
-        assertNotNull(otel);
-        assertFalse(GlobalOpenTelemetry.isSet(), "GlobalOpenTelemetry should not be set");
+    public OpenTelemetry create() {
+        return OpenTelemetrySdk.builder().build();
     }
 }

@@ -26,6 +26,9 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import jakarta.inject.Singleton;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import java.util.logging.LogManager;
 
 /**
  * @since 4.0
@@ -46,6 +49,10 @@ public class OpenTelemetryModule implements BQModule {
     @Singleton
     @Provides
     OpenTelemetry provideOpenTelemetry() {
+
+        // reconfigure JUL used by LoggingMetricExporter and friends
+        LogManager.getLogManager().reset();
+        SLF4JBridgeHandler.install();
 
         // If started via agent, use the global singleton. Otherwise, create a Bootique managed instance
         return GlobalOpenTelemetry.isSet()

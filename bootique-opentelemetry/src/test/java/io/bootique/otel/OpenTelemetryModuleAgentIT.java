@@ -27,17 +27,20 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// this test is excluded from the main integration tests run in the pom, but is run with a special config that
+// attaches the agent
 @BQTest
-public class OpenTelemetryModuleIT {
+public class OpenTelemetryModuleAgentIT {
 
     @BQTestTool
     static final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
 
     @Test
-    public void openTelemetry() {
-        assertFalse(GlobalOpenTelemetry.isSet(), "OpenTelemetry agent should not be active");
+    public void openTelemetryFromAgent() {
+        assertTrue(GlobalOpenTelemetry.isSet(), "OpenTelemetry agent should be active");
+
         OpenTelemetry otel = testFactory.app().createRuntime().getInstance(OpenTelemetry.class);
         assertNotNull(otel);
-        assertFalse(GlobalOpenTelemetry.isSet(), "GlobalOpenTelemetry should not be set");
+        assertSame(GlobalOpenTelemetry.get(), otel, "Should use the agent-provided OpenTelemetry instance");
     }
 }
