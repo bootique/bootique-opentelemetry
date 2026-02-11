@@ -20,6 +20,7 @@ package io.bootique.otel;
 
 import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
+import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.meta.application.ApplicationMetadata;
@@ -27,7 +28,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import jakarta.inject.Singleton;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -39,10 +39,13 @@ import java.util.logging.LogManager;
  */
 public class OpenTelemetryModule implements BQModule {
 
+    private static final String CONFIG_PREFIX = "opentelemetry";
+
     @Override
     public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Integrates OpenTelemetry.")
+                .config(CONFIG_PREFIX, OpenTelemetryFactory.class)
                 .build();
     }
 
@@ -59,7 +62,7 @@ public class OpenTelemetryModule implements BQModule {
 
     @Singleton
     @Provides
-    OpenTelemetry provideOpenTelemetry() {
+    OpenTelemetry provideOpenTelemetry(ConfigurationFactory configFactory) {
 
         // reconfigure JUL used by LoggingMetricExporter and friends
         LogManager.getLogManager().reset();
@@ -68,9 +71,6 @@ public class OpenTelemetryModule implements BQModule {
         // If started via agent, use the global singleton. Otherwise, create a Bootique managed instance
         return GlobalOpenTelemetry.isSet()
                 ? GlobalOpenTelemetry.get()
-
-                // TODO: OpenTelemetry instance is injectable throughout Bootique. Does it ever make sense to use
-                //  "buildAndRegisterGlobal()" and share it outside?
-                : OpenTelemetrySdk.builder().build();
+                : configFactory.config(OpenTelemetryFactory.class, CONFIG_PREFIX).create();
     }
 }

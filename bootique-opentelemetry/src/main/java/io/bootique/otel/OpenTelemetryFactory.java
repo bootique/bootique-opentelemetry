@@ -19,16 +19,47 @@
 package io.bootique.otel;
 
 import io.bootique.annotation.BQConfig;
+import io.bootique.annotation.BQConfigProperty;
+import io.bootique.otel.trace.SdkTracerProviderFactory;
+import io.bootique.shutdown.ShutdownManager;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.resources.Resource;
+import jakarta.inject.Inject;
 
 /**
  * @since 4.0
  */
 @BQConfig
 public class OpenTelemetryFactory {
+    
+    private final Resource resource;
+    private final ShutdownManager shutdownManager;
+
+    private SdkTracerProviderFactory traceProvider;
+
+    @Inject
+    public OpenTelemetryFactory(Resource resource, ShutdownManager shutdownManager) {
+        this.resource = resource;
+        this.shutdownManager = shutdownManager;
+    }
+
+    @BQConfigProperty
+    public OpenTelemetryFactory setTraceProvider(SdkTracerProviderFactory traceProvider) {
+        this.traceProvider = traceProvider;
+        return this;
+    }
 
     public OpenTelemetry create() {
-        return OpenTelemetrySdk.builder().build();
+        OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
+        builder.setTracerProvider(traceProviderOrDefault().create());
+        return builder.build();
+    }
+
+    private SdkTracerProviderFactory traceProviderOrDefault() {
+        return traceProvider != null
+                ? traceProvider
+                : new SdkTracerProviderFactory(resource, shutdownManager);
     }
 }

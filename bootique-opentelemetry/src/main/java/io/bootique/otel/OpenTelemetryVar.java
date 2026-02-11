@@ -28,7 +28,15 @@ package io.bootique.otel;
  */
 enum OpenTelemetryVar {
 
-    OTEL_SERVICE_NAME("service.name");
+    /* General SDK Configuration */
+    OTEL_SERVICE_NAME("service.name"),
+
+    /* Exporter Selection */
+    OTEL_TRACES_EXPORTER("traces.exporter"),
+
+    /* OTLP Exporter */
+    OTEL_EXPORTER_OTLP_PROTOCOL("exporter.otlp.protocol");
+    // TODO: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL, OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, OTEL_EXPORTER_OTLP_LOGS_PROTOCOL
 
     public final String otelProperty;
 

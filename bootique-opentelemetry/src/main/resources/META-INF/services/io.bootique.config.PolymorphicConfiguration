@@ -1,0 +1,3 @@
+io.bootique.otel.trace.ConsoleSpanExporterFactory
+io.bootique.otel.trace.NoneSpanExporterFactory
+io.bootique.otel.trace.SpanExporterFactory
