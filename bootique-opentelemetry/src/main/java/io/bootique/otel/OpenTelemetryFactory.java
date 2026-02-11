@@ -20,11 +20,13 @@ package io.bootique.otel;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.otel.logger.SdkLoggerProviderFactory;
 import io.bootique.otel.meter.SdkMeterProviderFactory;
 import io.bootique.otel.trace.SdkTracerProviderFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -39,6 +41,7 @@ public class OpenTelemetryFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
+    private SdkLoggerProviderFactory loggerProvider;
     private SdkMeterProviderFactory meterProvider;
     private SdkTracerProviderFactory tracerProvider;
 
@@ -46,6 +49,12 @@ public class OpenTelemetryFactory {
     public OpenTelemetryFactory(Resource resource, ShutdownManager shutdownManager) {
         this.resource = resource;
         this.shutdownManager = shutdownManager;
+    }
+
+    @BQConfigProperty
+    public OpenTelemetryFactory setLoggerProvider(SdkLoggerProviderFactory loggerProvider) {
+        this.loggerProvider = loggerProvider;
+        return this;
     }
 
     @BQConfigProperty
@@ -62,13 +71,21 @@ public class OpenTelemetryFactory {
 
     public OpenTelemetry create() {
         SdkMeterProvider meterProvider = meterProviderOrDefault().create();
-        SdkTracerProvider tracerProvider = traceProviderOrDefault().create(meterProvider);
+        SdkTracerProvider tracerProvider = tracerProviderOrDefault().create(meterProvider);
+        SdkLoggerProvider loggerProvider = loggerProviderOrDefault().create(meterProvider);
 
         return OpenTelemetrySdk
                 .builder()
                 .setTracerProvider(tracerProvider)
                 .setMeterProvider(meterProvider)
+                .setLoggerProvider(loggerProvider)
                 .build();
+    }
+
+    private SdkLoggerProviderFactory loggerProviderOrDefault() {
+        return loggerProvider != null
+                ? loggerProvider
+                : new SdkLoggerProviderFactory(resource, shutdownManager);
     }
 
     private SdkMeterProviderFactory meterProviderOrDefault() {
@@ -77,7 +94,7 @@ public class OpenTelemetryFactory {
                 : new SdkMeterProviderFactory(resource, shutdownManager);
     }
 
-    private SdkTracerProviderFactory traceProviderOrDefault() {
+    private SdkTracerProviderFactory tracerProviderOrDefault() {
         return tracerProvider != null
                 ? tracerProvider
                 : new SdkTracerProviderFactory(resource, shutdownManager);

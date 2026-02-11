@@ -57,8 +57,8 @@ public class SdkTracerProviderIT {
             assertEquals("opentelemetry", spanData.getResource().getAttribute(AttributeKey.stringKey("telemetry.sdk.name")));
         } finally {
             String output = captureStderr(span::end);
-            assertTrue(output.contains("'test-span'"), "Expected span name in console output, got: " + output);
-            assertTrue(output.contains("[tracer: test:]"), "Expected tracer name in console output, got: " + output);
+            assertTrue(output.contains("'test-span'"), () -> "Expected span name in console output, got: " + output);
+            assertTrue(output.contains("[tracer: test:]"), () -> "Expected tracer name in console output, got: " + output);
         }
     }
 
@@ -71,7 +71,7 @@ public class SdkTracerProviderIT {
 
         Span span = otel.getTracer("test").spanBuilder("console-span").startSpan();
         String output = captureStderr(span::end);
-        assertTrue(output.contains("'console-span'"), "Expected span name in console output, got: " + output);
+        assertTrue(output.contains("'console-span'"), () -> "Expected span name in console output, got: " + output);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class SdkTracerProviderIT {
         Span span = otel.getTracer("test").spanBuilder("none-span").startSpan();
         assertInstanceOf(ReadableSpan.class, span);
         String output = captureStderr(span::end);
-        assertTrue(output.isEmpty(), "No export output expected with 'none' exporter, got: " + output);
+        assertTrue(output.isEmpty(), () -> "No export output expected with 'none' exporter, got: " + output);
     }
 
     private static String captureStderr(Runnable action) {

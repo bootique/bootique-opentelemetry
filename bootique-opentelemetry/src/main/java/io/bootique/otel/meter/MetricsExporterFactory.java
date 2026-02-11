@@ -27,8 +27,12 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * @since 4.0
  */
 @BQConfig
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleMetricExporterFactory.class)
-public interface MetricExporterFactory extends PolymorphicConfiguration {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleMetricsExporterFactory.class)
+
+// Note the name "Metrics" (even though it creates MetricExporter).
+// The name is derived from the OTEL_METRICS_EXPORTER var
+
+public interface MetricsExporterFactory extends PolymorphicConfiguration {
 
     MetricExporter create();
 }

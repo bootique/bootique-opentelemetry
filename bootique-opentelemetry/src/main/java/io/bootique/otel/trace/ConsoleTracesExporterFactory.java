@@ -18,13 +18,14 @@
  */
 package io.bootique.otel.trace;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.bootique.annotation.BQConfig;
-import io.bootique.config.PolymorphicConfiguration;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 
-@BQConfig
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleSpanExporterFactory.class)
-public interface SpanExporterFactory extends PolymorphicConfiguration {
+@JsonTypeName("console")
+public class ConsoleTracesExporterFactory implements TracesExporterFactory {
 
-    SpanExporterHolder create();
+    @Override
+    public SpanExporterHolder create() {
+        return new SpanExporterHolder(LoggingSpanExporter::create, false);
+    }
 }

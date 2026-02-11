@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.otel.trace;
+package io.bootique.otel.logger;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.shutdown.ShutdownManager;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import jakarta.inject.Inject;
 
 import java.util.ArrayList;
@@ -41,47 +41,45 @@ import java.util.function.Supplier;
  * @since 4.0
  */
 @BQConfig
-public class SdkTracerProviderFactory {
+public class SdkLoggerProviderFactory {
 
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private List<TracesExporterFactory> traceExporters;
+    private List<LogsExporterFactory> logExporters;
+
+    @BQConfigProperty
+    public SdkLoggerProviderFactory setLogExporters(List<LogsExporterFactory> logExporters) {
+        this.logExporters = logExporters;
+        return this;
+    }
 
     @Inject
-    public SdkTracerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
+    public SdkLoggerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
         this.resource = resource;
         this.shutdownManager = shutdownManager;
     }
 
-    @BQConfigProperty
-    public SdkTracerProviderFactory setTraceExporters(List<TracesExporterFactory> traceExporters) {
-        this.traceExporters = traceExporters;
-        return this;
-    }
-
-    public SdkTracerProvider create(MeterProvider meterProvider) {
+    public SdkLoggerProvider create(MeterProvider meterProvider) {
 
         Supplier<MeterProvider> meterProviderSupplier = () -> meterProvider;
 
-        SdkTracerProviderBuilder builder = SdkTracerProvider
+        SdkLoggerProviderBuilder builder = SdkLoggerProvider
                 .builder()
                 .setResource(resource)
                 .setMeterProvider(meterProviderSupplier);
 
-        // TODO: span limits
-        // TODO: sampler
+        // TODO: clock
+        // TODO: log limits
 
-        createProcessors(meterProviderSupplier).forEach(builder::addSpanProcessor);
-
+        createProcessors(meterProviderSupplier).forEach(builder::addLogRecordProcessor);
         return shutdownManager.onShutdown(builder.build());
     }
 
-    private List<SpanProcessor> createProcessors(Supplier<MeterProvider> meterProvider) {
+    private List<LogRecordProcessor> createProcessors(Supplier<MeterProvider> meterProvider) {
+        List<LogRecordProcessor> processors = new ArrayList<>(2);
 
-        List<SpanProcessor> processors = new ArrayList<>(2);
-
-        List<SpanExporterHolder> batchedExporters = exporterHolders()
+        List<LogRecordExporterHolder> batchedExporters = exporterHolders()
                 .stream()
 
                 // add a simple processor for console exporter, feed the rest into a single batch processor
@@ -90,7 +88,7 @@ public class SdkTracerProviderFactory {
                         processors.add(createSimpleProcessor(e, meterProvider));
                     }
                 })
-                .filter(SpanExporterHolder::shouldBatch)
+                .filter(LogRecordExporterHolder::shouldBatch)
                 .toList();
 
         if (!batchedExporters.isEmpty()) {
@@ -100,50 +98,49 @@ public class SdkTracerProviderFactory {
         return processors;
     }
 
-    private SpanProcessor createSimpleProcessor(SpanExporterHolder exporterSupplier, Supplier<MeterProvider> meterProvider) {
+    private LogRecordProcessor createSimpleProcessor(LogRecordExporterHolder exporterSupplier, Supplier<MeterProvider> meterProvider) {
         // presumably we don't need to shut down the exporter, as SpanProcessor would do it for us
-        SpanProcessor processor = SimpleSpanProcessor
-                .builder(exporterSupplier.spanExporter().get())
+        LogRecordProcessor processor = SimpleLogRecordProcessor
+                .builder(exporterSupplier.exporterSupplier().get())
                 .setMeterProvider(meterProvider)
                 .build();
 
         return shutdownManager.onShutdown(processor);
     }
 
-    private BatchSpanProcessor createBatchProcessor(List<SpanExporterHolder> exporterSuppliers, Supplier<MeterProvider> meterProvider) {
+    private BatchLogRecordProcessor createBatchProcessor(List<LogRecordExporterHolder> exporterSuppliers, Supplier<MeterProvider> meterProvider) {
 
-        List<SpanExporter> exporters = exporterSuppliers.stream().map(s -> s.spanExporter().get()).toList();
-        SpanExporter composite = SpanExporter.composite(exporters);
+        List<LogRecordExporter> exporters = exporterSuppliers.stream().map(s -> s.exporterSupplier().get()).toList();
+        LogRecordExporter composite = MultiLogRecordExporter.create(exporters);
 
         // presumably we don't need to shut down the exporter, as BatchLogRecordProcessor would do it for us
-        BatchSpanProcessorBuilder builder = BatchSpanProcessor
+        BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor
                 .builder(composite)
                 .setMeterProvider(meterProvider);
 
         // TODO:
         //  support props for the builder:
-        //   otel.bsp.schedule.delay
-        //   otel.bsp.max.queue.size
-        //   otel.bsp.max.export.batch.size
-        //   otel.bsp.export.timeout
+        //   schedule.delay
+        //   max.queue.size
+        //   max.export.batch.size
+        //   export.timeout
 
         return shutdownManager.onShutdown(builder.build());
     }
 
-    private List<SpanExporterHolder> exporterHolders() {
-
+    private List<LogRecordExporterHolder> exporterHolders() {
         // unlike the agent whose default is "otlp", our default will be "console", so that the app could
         // work standalone out of the box. To suppress exporting, an explicit "none" exporter should be set
 
         // A single "none" exporter would suppress the default "console" exporter. Though unlike the agent, having a
         // "none" exporter mixed with others doesn't result in an exception. It will just be ignored
 
-        List<TracesExporterFactory> exporters = this.traceExporters == null || this.traceExporters.isEmpty()
-                ? List.of(new ConsoleTracesExporterFactory())
-                : this.traceExporters;
+        List<LogsExporterFactory> exporters = this.logExporters == null || this.logExporters.isEmpty()
+                ? List.of(new ConsoleLogsExporterFactory())
+                : this.logExporters;
 
         return exporters.stream()
-                .map(TracesExporterFactory::create)
+                .map(LogsExporterFactory::create)
                 .filter(Objects::nonNull)
                 .toList();
     }

@@ -18,13 +18,17 @@
  */
 package io.bootique.otel.trace;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.bootique.annotation.BQConfig;
+import io.bootique.config.PolymorphicConfiguration;
 
-@JsonTypeName("none")
-public class NoneSpanExporterFactory implements SpanExporterFactory {
+@BQConfig
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleTracesExporterFactory.class)
 
-    @Override
-    public SpanExporterHolder create() {
-        return null;
-    }
+// Note the name "Traces" (even though it creates SpanExporterHolder).
+// The name is derived from the OTEL_TRACES_EXPORTER var
+
+public interface TracesExporterFactory extends PolymorphicConfiguration {
+
+    SpanExporterHolder create();
 }

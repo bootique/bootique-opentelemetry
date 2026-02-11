@@ -19,16 +19,19 @@
 package io.bootique.otel.meter;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
  * @since 4.0
  */
-@JsonTypeName("noop")
-public class NoopMetricExporterFactory implements MetricExporterFactory {
+@JsonTypeName("console")
+public class ConsoleMetricsExporterFactory implements MetricsExporterFactory {
 
     @Override
     public MetricExporter create() {
-        return null;
+        // No explicit shutdown. The exporter is closed by the parent MetricReader, which is in turn closed by
+        // SdkMeterProvider
+        return LoggingMetricExporter.create();
     }
 }

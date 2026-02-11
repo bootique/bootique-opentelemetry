@@ -24,7 +24,6 @@ import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.LongCounter;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -33,64 +32,55 @@ import java.io.PrintStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
-public class SdkMeterProviderIT {
+public class SdkLoggerProviderIT {
 
     @BQTestTool
     static final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
 
     @Test
     public void defaultExporter() {
-        BQRuntime runtime = testFactory.app()
-                .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms"))
-                .createRuntime();
-
+        BQRuntime runtime = testFactory.app().createRuntime();
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
-        LongCounter counter = otel.getMeter("test").counterBuilder("test-counter").build();
-        counter.add(1);
 
-        String output = captureStderr(() -> sleep(200));
-        assertTrue(output.contains("test-counter"), () -> "Expected metric name in console output, got: " + output);
+        String output = captureStderr(() -> otel.getLogsBridge().get("test")
+                .logRecordBuilder()
+                .setBody("test-log-body")
+                .emit());
+
+        assertTrue(output.contains("test-log-body"), () -> "Expected log body in console output, got: " + output);
+        assertTrue(output.contains("[scopeInfo: test:]"), () -> "Expected scope name in console output, got: " + output);
     }
 
     @Test
     public void consoleExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms")
-                        .setProperty("bq.opentelemetry.meterProvider.metricExporters[0].type", "console"))
+                        .setProperty("bq.opentelemetry.loggerProvider.logExporters[0].type", "console"))
                 .createRuntime();
-
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
-        LongCounter counter = otel.getMeter("test").counterBuilder("console-counter").build();
-        counter.add(1);
 
-        String output = captureStderr(() -> sleep(200));
-        assertTrue(output.contains("console-counter"), () -> "Expected metric name in console output, got: " + output);
+        String output = captureStderr(() -> otel.getLogsBridge().get("test")
+                .logRecordBuilder()
+                .setBody("console-log-body")
+                .emit());
+
+        assertTrue(output.contains("console-log-body"), () -> "Expected log body in console output, got: " + output);
     }
 
     @Test
-    public void noopExporter() {
+    public void noneExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms")
-                        .setProperty("bq.opentelemetry.meterProvider.metricExporters[0].type", "none"))
+                        .setProperty("bq.opentelemetry.loggerProvider.logExporters[0].type", "none"))
                 .createRuntime();
-
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
-        LongCounter counter = otel.getMeter("test").counterBuilder("none-counter").build();
-        counter.add(1);
 
-        String output = captureStderr(() -> sleep(200));
-        assertFalse(output.contains("none-counter"), () -> "No export output expected with 'none' exporter, got: " + output);
-    }
+        String output = captureStderr(() -> otel.getLogsBridge().get("test")
+                .logRecordBuilder()
+                .setBody("none-log-body")
+                .emit());
 
-    private static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        assertFalse(output.contains("none-log-body"), () -> "No export output expected with 'none' exporter, got: " + output);
     }
 
     private static String captureStderr(Runnable action) {
