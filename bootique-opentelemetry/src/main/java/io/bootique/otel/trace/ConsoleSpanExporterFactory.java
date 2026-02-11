@@ -25,7 +25,7 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 public class ConsoleSpanExporterFactory implements SpanExporterFactory {
 
     @Override
-    public SpanExporterSupplier create() {
-        return new SpanExporterSupplier(() -> LoggingSpanExporter.create(), false);
+    public SpanExporterHolder create() {
+        return new SpanExporterHolder(LoggingSpanExporter::create, false);
     }
 }

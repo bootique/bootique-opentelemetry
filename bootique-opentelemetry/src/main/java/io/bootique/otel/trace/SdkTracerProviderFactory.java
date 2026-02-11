@@ -21,6 +21,7 @@ package io.bootique.otel.trace;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.shutdown.ShutdownManager;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -33,6 +34,7 @@ import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @since 4.0
@@ -43,7 +45,7 @@ public class SdkTracerProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private List<SpanExporterFactory> tracesExporters;
+    private List<SpanExporterFactory> traceExporters;
 
     @Inject
     public SdkTracerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
@@ -52,19 +54,19 @@ public class SdkTracerProviderFactory {
     }
 
     @BQConfigProperty
-    public SdkTracerProviderFactory setTracesExporters(List<SpanExporterFactory> tracesExporters) {
-        this.tracesExporters = tracesExporters;
+    public SdkTracerProviderFactory setTraceExporters(List<SpanExporterFactory> traceExporters) {
+        this.traceExporters = traceExporters;
         return this;
     }
 
-    public SdkTracerProvider create() {
+    public SdkTracerProvider create(MeterProvider meterProvider) {
 
         SdkTracerProviderBuilder builder = SdkTracerProvider
                 .builder()
-                .setResource(resource);
+                .setResource(resource)
+                .setMeterProvider(() -> meterProvider);
 
         // TODO: span limits
-        // TODO: meter provider
         // TODO: sampler
 
         createSpanProcessors().forEach(builder::addSpanProcessor);
@@ -76,7 +78,7 @@ public class SdkTracerProviderFactory {
 
         List<SpanProcessor> processors = new ArrayList<>(2);
 
-        List<SpanExporterSupplier> batchedExporters = exporterSuppliers()
+        List<SpanExporterHolder> batchedExporters = exporterSuppliers()
                 .stream()
 
                 // add a simple processor for console exporter, feed the rest into a single batch processor
@@ -85,7 +87,7 @@ public class SdkTracerProviderFactory {
                         processors.add(createSimpleSpanProcessor(e));
                     }
                 })
-                .filter(SpanExporterSupplier::shouldBatch)
+                .filter(SpanExporterHolder::shouldBatch)
                 .toList();
 
         if (!batchedExporters.isEmpty()) {
@@ -95,7 +97,7 @@ public class SdkTracerProviderFactory {
         return processors;
     }
 
-    private List<SpanExporterSupplier> exporterSuppliers() {
+    private List<SpanExporterHolder> exporterSuppliers() {
 
         // unlike the agent whose default is "otlp", our default will be "console", so that the app could
         // work standalone out of the box. To suppress exporting, an explicit "none" exporter should be set
@@ -103,17 +105,17 @@ public class SdkTracerProviderFactory {
         // A single "none" exporter would suppress the default "console" exporter. Though unlike the agent, having a
         // "none" exporter mixed with others doesn't result in an exception. It will just be ignored
 
-        List<SpanExporterFactory> tracesExporters = this.tracesExporters == null || this.tracesExporters.isEmpty()
+        List<SpanExporterFactory> exporters = this.traceExporters == null || this.traceExporters.isEmpty()
                 ? List.of(new ConsoleSpanExporterFactory())
-                : this.tracesExporters;
+                : this.traceExporters;
 
-        return tracesExporters.stream()
+        return exporters.stream()
                 .map(SpanExporterFactory::create)
-                .filter(s -> !s.isNone())
+                .filter(Objects::nonNull)
                 .toList();
     }
 
-    private SpanProcessor createSimpleSpanProcessor(SpanExporterSupplier exporterSupplier) {
+    private SpanProcessor createSimpleSpanProcessor(SpanExporterHolder exporterSupplier) {
         // TODO: .setMeterProvider(() -> meterProvider)
 
         // presumably we don't need to shut down the exporter, as SpanProcessor would do it for us
@@ -121,7 +123,7 @@ public class SdkTracerProviderFactory {
         return shutdownManager.onShutdown(processor);
     }
 
-    private BatchSpanProcessor createBatchSpanProcessor(List<SpanExporterSupplier> exporterSuppliers) {
+    private BatchSpanProcessor createBatchSpanProcessor(List<SpanExporterHolder> exporterSuppliers) {
 
         List<SpanExporter> exporters = exporterSuppliers.stream().map(s -> s.spanExporter().get()).toList();
         SpanExporter composite = SpanExporter.composite(exporters);

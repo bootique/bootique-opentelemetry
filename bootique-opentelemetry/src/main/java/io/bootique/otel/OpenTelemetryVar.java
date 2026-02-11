@@ -33,10 +33,14 @@ enum OpenTelemetryVar {
 
     /* Exporter Selection */
     OTEL_TRACES_EXPORTER("traces.exporter"),
+    OTEL_METRICS_EXPORTER("metrics.exporter"),
 
     /* OTLP Exporter */
-    OTEL_EXPORTER_OTLP_PROTOCOL("exporter.otlp.protocol");
+    OTEL_EXPORTER_OTLP_PROTOCOL("exporter.otlp.protocol"),
     // TODO: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL, OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, OTEL_EXPORTER_OTLP_LOGS_PROTOCOL
+
+    /* Metrics SDK Configuration */
+    OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval");
 
     public final String otelProperty;
 

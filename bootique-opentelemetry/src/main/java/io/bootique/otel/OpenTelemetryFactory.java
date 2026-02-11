@@ -20,12 +20,14 @@ package io.bootique.otel;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.otel.meter.SdkMeterProviderFactory;
 import io.bootique.otel.trace.SdkTracerProviderFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import jakarta.inject.Inject;
 
 /**
@@ -33,11 +35,12 @@ import jakarta.inject.Inject;
  */
 @BQConfig
 public class OpenTelemetryFactory {
-    
+
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private SdkTracerProviderFactory traceProvider;
+    private SdkMeterProviderFactory meterProvider;
+    private SdkTracerProviderFactory tracerProvider;
 
     @Inject
     public OpenTelemetryFactory(Resource resource, ShutdownManager shutdownManager) {
@@ -46,20 +49,37 @@ public class OpenTelemetryFactory {
     }
 
     @BQConfigProperty
-    public OpenTelemetryFactory setTraceProvider(SdkTracerProviderFactory traceProvider) {
-        this.traceProvider = traceProvider;
+    public OpenTelemetryFactory setMeterProvider(SdkMeterProviderFactory meterProvider) {
+        this.meterProvider = meterProvider;
+        return this;
+    }
+
+    @BQConfigProperty
+    public OpenTelemetryFactory setTracerProvider(SdkTracerProviderFactory tracerProvider) {
+        this.tracerProvider = tracerProvider;
         return this;
     }
 
     public OpenTelemetry create() {
-        OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-        builder.setTracerProvider(traceProviderOrDefault().create());
-        return builder.build();
+        SdkMeterProvider meterProvider = meterProviderOrDefault().create();
+        SdkTracerProvider tracerProvider = traceProviderOrDefault().create(meterProvider);
+
+        return OpenTelemetrySdk
+                .builder()
+                .setTracerProvider(tracerProvider)
+                .setMeterProvider(meterProvider)
+                .build();
+    }
+
+    private SdkMeterProviderFactory meterProviderOrDefault() {
+        return meterProvider != null
+                ? meterProvider
+                : new SdkMeterProviderFactory(resource, shutdownManager);
     }
 
     private SdkTracerProviderFactory traceProviderOrDefault() {
-        return traceProvider != null
-                ? traceProvider
+        return tracerProvider != null
+                ? tracerProvider
                 : new SdkTracerProviderFactory(resource, shutdownManager);
     }
 }

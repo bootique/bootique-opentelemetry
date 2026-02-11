@@ -16,15 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.otel.trace;
+package io.bootique.otel.meter;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.bootique.annotation.BQConfig;
+import io.bootique.config.PolymorphicConfiguration;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
-@JsonTypeName("none")
-public class NoneSpanExporterFactory implements SpanExporterFactory {
+/**
+ * @since 4.0
+ */
+@BQConfig
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleMetricExporterFactory.class)
+public interface MetricExporterFactory extends PolymorphicConfiguration {
 
-    @Override
-    public SpanExporterHolder create() {
-        return null;
-    }
+    MetricExporter create();
 }

@@ -1,3 +1,6 @@
+io.bootique.otel.meter.ConsoleMetricExporterFactory
+io.bootique.otel.meter.MetricExporterFactory
+io.bootique.otel.meter.NoopMetricExporterFactory
 io.bootique.otel.trace.ConsoleSpanExporterFactory
 io.bootique.otel.trace.NoneSpanExporterFactory
 io.bootique.otel.trace.SpanExporterFactory

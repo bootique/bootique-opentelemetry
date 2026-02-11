@@ -18,13 +18,12 @@
  */
 package io.bootique.otel.trace;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-@JsonTypeName("none")
-public class NoneSpanExporterFactory implements SpanExporterFactory {
+import java.util.function.Supplier;
 
-    @Override
-    public SpanExporterHolder create() {
-        return null;
-    }
+/**
+ * @since 4.0
+ */
+public record SpanExporterHolder(Supplier<SpanExporter> spanExporter, boolean shouldBatch) {
 }

@@ -16,18 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.otel.trace;
+package io.bootique.otel.meter;
 
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
-import java.util.function.Supplier;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
  * @since 4.0
  */
-public record SpanExporterSupplier(Supplier<SpanExporter> spanExporter, boolean shouldBatch) {
+@JsonTypeName("console")
+public class ConsoleMetricExporterFactory implements MetricExporterFactory {
 
-    public boolean isNone() {
-        return spanExporter == null;
+    @Override
+    public MetricExporter create() {
+        return LoggingMetricExporter.create();
     }
 }

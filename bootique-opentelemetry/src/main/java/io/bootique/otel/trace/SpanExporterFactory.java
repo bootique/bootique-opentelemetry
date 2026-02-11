@@ -26,5 +26,5 @@ import io.bootique.config.PolymorphicConfiguration;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleSpanExporterFactory.class)
 public interface SpanExporterFactory extends PolymorphicConfiguration {
 
-    SpanExporterSupplier create();
+    SpanExporterHolder create();
 }
