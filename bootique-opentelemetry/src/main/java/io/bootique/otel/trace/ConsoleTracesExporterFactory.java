@@ -19,13 +19,16 @@
 package io.bootique.otel.trace;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+
+import java.util.function.Supplier;
 
 @JsonTypeName("console")
 public class ConsoleTracesExporterFactory implements TracesExporterFactory {
 
     @Override
-    public SpanExporterHolder create() {
+    public SpanExporterHolder create(Supplier<MeterProvider> meterProvider) {
         return new SpanExporterHolder(LoggingSpanExporter::create, false);
     }
 }

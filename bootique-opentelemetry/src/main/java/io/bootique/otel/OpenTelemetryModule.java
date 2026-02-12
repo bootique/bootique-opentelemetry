@@ -24,6 +24,8 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.meta.application.ApplicationMetadata;
+import io.bootique.otel.otlp.OtlpExporterEndpoint;
+import io.bootique.otel.otlp.OtlpExporterEndpointFactory;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -40,12 +42,14 @@ import java.util.logging.LogManager;
 public class OpenTelemetryModule implements BQModule {
 
     private static final String CONFIG_PREFIX = "opentelemetry";
+    private static final String OTLP_CONFIG_PREFIX = CONFIG_PREFIX + ".otlp";
 
     @Override
     public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Integrates OpenTelemetry.")
                 .config(CONFIG_PREFIX, OpenTelemetryFactory.class)
+                .config(OTLP_CONFIG_PREFIX, OtlpExporterEndpointFactory.class)
                 .build();
     }
 
@@ -72,5 +76,11 @@ public class OpenTelemetryModule implements BQModule {
         return GlobalOpenTelemetry.isSet()
                 ? GlobalOpenTelemetry.get()
                 : configFactory.config(OpenTelemetryFactory.class, CONFIG_PREFIX).create();
+    }
+
+    @Singleton
+    @Provides
+    OtlpExporterEndpoint provideOtlpExporterEndpoint(ConfigurationFactory configFactory) {
+        return configFactory.config(OtlpExporterEndpointFactory.class, OTLP_CONFIG_PREFIX).create();
     }
 }

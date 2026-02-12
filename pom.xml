@@ -18,7 +18,8 @@
   under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.bootique.modules.parent</groupId>
@@ -26,10 +27,10 @@
         <version>4.0.4</version>
     </parent>
 
-	<groupId>io.bootique.opentelemetry</groupId>
-	<artifactId>bootique-opentelemetry-parent</artifactId>
-	<version>4.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>io.bootique.opentelemetry</groupId>
+    <artifactId>bootique-opentelemetry-parent</artifactId>
+    <version>4.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <name>bootique-opentelemetry-parent: Parent of OpenTelemetry modules for Bootique</name>
     <description>
@@ -37,8 +38,8 @@
     </description>
 
     <properties>
-       <opentelemetry.version>1.59.0</opentelemetry.version>
-       <opentelemetry.agent.version>2.24.0</opentelemetry.agent.version>
+        <opentelemetry.version>1.59.0</opentelemetry.version>
+        <opentelemetry.agent.version>2.24.0</opentelemetry.agent.version>
     </properties>
 
     <modules>
@@ -67,6 +68,33 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-logging</artifactId>
                 <version>${opentelemetry.version}</version>
+                <exclusions>
+                    <!--
+                   We configure everything through Bootique, so autoconfigure SPI is currently not supported by design.
+                   Though eventually we may revert this policy and allow extensions declared in "META-INF/services",
+                   and then we'll need this jar
+                   -->
+                    <exclusion>
+                        <groupId>io.opentelemetry</groupId>
+                        <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${opentelemetry.version}</version>
+                <exclusions>
+                    <!--
+                    We configure everything through Bootique, so autoconfigure SPI is currently not supported by design.
+                    Though eventually we may revert this policy and allow extensions declared in "META-INF/services",
+                    and then we'll need this jar
+                    -->
+                    <exclusion>
+                        <groupId>io.opentelemetry</groupId>
+                        <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.bootique</groupId>

@@ -18,6 +18,7 @@
  */
 package io.bootique.otel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.otel.logger.SdkLoggerProviderFactory;
@@ -36,6 +37,10 @@ import jakarta.inject.Inject;
  * @since 4.0
  */
 @BQConfig
+// ignore optional "otlp" property. It is read outside of this factory
+// TODO: not ideal. Ignoring all unknown will result in letting incorrect configurations slip through.
+//  Would be great to just ignore "otlp"
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OpenTelemetryFactory {
 
     private final Resource resource;

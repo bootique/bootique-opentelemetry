@@ -16,18 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.otel.trace;
+package io.bootique.otel.otlp;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.opentelemetry.api.metrics.MeterProvider;
+/**
+ * @since 4.0
+ */
+public enum OtlpProtocol {
 
-import java.util.function.Supplier;
-
-@JsonTypeName("none")
-public class NoneTracesExporterFactory implements TracesExporterFactory {
-
-    @Override
-    public SpanExporterHolder create(Supplier<MeterProvider> meterProvider) {
-        return null;
-    }
+    grpc, http_protobuf
 }

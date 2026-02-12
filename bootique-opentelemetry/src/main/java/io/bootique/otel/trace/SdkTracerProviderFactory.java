@@ -81,7 +81,7 @@ public class SdkTracerProviderFactory {
 
         List<SpanProcessor> processors = new ArrayList<>(2);
 
-        List<SpanExporterHolder> batchedExporters = exporterHolders()
+        List<SpanExporterHolder> batchedExporters = exporterHolders(meterProvider)
                 .stream()
 
                 // add a simple processor for console exporter, feed the rest into a single batch processor
@@ -130,7 +130,7 @@ public class SdkTracerProviderFactory {
         return shutdownManager.onShutdown(builder.build());
     }
 
-    private List<SpanExporterHolder> exporterHolders() {
+    private List<SpanExporterHolder> exporterHolders(Supplier<MeterProvider> meterProvider) {
 
         // unlike the agent whose default is "otlp", our default will be "console", so that the app could
         // work standalone out of the box. To suppress exporting, an explicit "none" exporter should be set
@@ -143,7 +143,7 @@ public class SdkTracerProviderFactory {
                 : this.traceExporters;
 
         return exporters.stream()
-                .map(TracesExporterFactory::create)
+                .map(f -> f.create(meterProvider))
                 .filter(Objects::nonNull)
                 .toList();
     }

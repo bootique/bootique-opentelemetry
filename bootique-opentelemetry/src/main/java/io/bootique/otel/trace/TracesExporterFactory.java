@@ -21,6 +21,9 @@ package io.bootique.otel.trace;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.bootique.annotation.BQConfig;
 import io.bootique.config.PolymorphicConfiguration;
+import io.opentelemetry.api.metrics.MeterProvider;
+
+import java.util.function.Supplier;
 
 @BQConfig
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = ConsoleTracesExporterFactory.class)
@@ -30,5 +33,5 @@ import io.bootique.config.PolymorphicConfiguration;
 
 public interface TracesExporterFactory extends PolymorphicConfiguration {
 
-    SpanExporterHolder create();
+    SpanExporterHolder create(Supplier<MeterProvider> meterProvider);
 }
