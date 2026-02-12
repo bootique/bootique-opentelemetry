@@ -68,38 +68,26 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-logging</artifactId>
                 <version>${opentelemetry.version}</version>
-                <exclusions>
-                    <!--
-                   We configure everything through Bootique, so autoconfigure SPI is currently not supported by design.
-                   Though eventually we may revert this policy and allow extensions declared in "META-INF/services",
-                   and then we'll need this jar
-                   -->
-                    <exclusion>
-                        <groupId>io.opentelemetry</groupId>
-                        <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-otlp</artifactId>
                 <version>${opentelemetry.version}</version>
-                <exclusions>
-                    <!--
-                    We configure everything through Bootique, so autoconfigure SPI is currently not supported by design.
-                    Though eventually we may revert this policy and allow extensions declared in "META-INF/services",
-                    and then we'll need this jar
-                    -->
-                    <exclusion>
-                        <groupId>io.opentelemetry</groupId>
-                        <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.bootique</groupId>
                 <artifactId>bootique-junit5</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-junit-jupiter</artifactId>
+                <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
