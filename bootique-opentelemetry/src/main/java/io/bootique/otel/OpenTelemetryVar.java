@@ -19,8 +19,8 @@
 package io.bootique.otel;
 
 /**
- * Defines supported variables from the OTel "Environment Variable Specification". Each var has a Java property equivalent
- * for the var strored in {@link #otelProperty}.
+ * Defines a subset of variables from the OTel "Environment Variable Specification" that is supported by the Bootique
+ * integration. Each var has a Java property equivalent for the var strored in {@link #otelProperty}.
  *
  * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/">Environment Variable
  * Specification</a>
@@ -28,7 +28,7 @@ package io.bootique.otel;
  */
 enum OpenTelemetryVar {
 
-    /* General SDK Configuration */
+    /* eneral SDK Configuration */
     OTEL_SERVICE_NAME("service.name"),
 
     /* Exporter Selection */
