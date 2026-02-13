@@ -32,10 +32,9 @@ enum OpenTelemetryVar {
     OTEL_SERVICE_NAME("service.name"),
 
     /* Exporter Selection */
-    // TODO: support
-//    OTEL_TRACES_EXPORTER("traces.exporter"),
-//    OTEL_METRICS_EXPORTER("metrics.exporter"),
-//    OTEL_LOGS_EXPORTER("logs.exporter"),
+    OTEL_TRACES_EXPORTER("traces.exporter"),
+    OTEL_METRICS_EXPORTER("metrics.exporter"),
+    OTEL_LOGS_EXPORTER("logs.exporter"),
 
     /* OTLP Exporter */
     OTEL_EXPORTER_OTLP_ENDPOINT("exporter.otlp.endpoint"),
