@@ -28,7 +28,7 @@ package io.bootique.otel;
  */
 enum OpenTelemetryVar {
 
-    /* eneral SDK Configuration */
+    /* General SDK Configuration */
     OTEL_SERVICE_NAME("service.name"),
 
     /* Exporter Selection */
