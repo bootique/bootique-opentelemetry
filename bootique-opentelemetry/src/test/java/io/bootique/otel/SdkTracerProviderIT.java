@@ -65,7 +65,7 @@ public class SdkTracerProviderIT {
     @Test
     public void consoleExporter() {
         BQRuntime runtime = testFactory.app()
-                .module(b -> BQCoreModule.extend(b).setProperty("bq.opentelemetry.tracerProvider.traceExporters[0].type", "console"))
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "console"))
                 .createRuntime();
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
 
@@ -77,7 +77,7 @@ public class SdkTracerProviderIT {
     @Test
     public void noneExporter() {
         BQRuntime runtime = testFactory.app()
-                .module(b -> BQCoreModule.extend(b).setProperty("bq.opentelemetry.tracerProvider.traceExporters[0].type", "none"))
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "none"))
                 .createRuntime();
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
 

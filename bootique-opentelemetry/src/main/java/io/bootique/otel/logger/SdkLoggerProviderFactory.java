@@ -46,11 +46,11 @@ public class SdkLoggerProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private List<LogsExporterFactory> logExporters;
+    private List<LogsExporterFactory> exporters;
 
     @BQConfigProperty
-    public SdkLoggerProviderFactory setLogExporters(List<LogsExporterFactory> logExporters) {
-        this.logExporters = logExporters;
+    public SdkLoggerProviderFactory setExporters(List<LogsExporterFactory> exporters) {
+        this.exporters = exporters;
         return this;
     }
 
@@ -135,9 +135,9 @@ public class SdkLoggerProviderFactory {
         // A single "none" exporter would suppress the default "console" exporter. Though unlike the agent, having a
         // "none" exporter mixed with others doesn't result in an exception. It will just be ignored
 
-        List<LogsExporterFactory> exporters = this.logExporters == null || this.logExporters.isEmpty()
+        List<LogsExporterFactory> exporters = this.exporters == null || this.exporters.isEmpty()
                 ? List.of(new ConsoleLogsExporterFactory())
-                : this.logExporters;
+                : this.exporters;
 
         return exporters.stream()
                 .map(LogsExporterFactory::create)

@@ -46,7 +46,7 @@ public class SdkTracerProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private List<TracesExporterFactory> traceExporters;
+    private List<TracesExporterFactory> exporters;
 
     @Inject
     public SdkTracerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
@@ -55,8 +55,8 @@ public class SdkTracerProviderFactory {
     }
 
     @BQConfigProperty
-    public SdkTracerProviderFactory setTraceExporters(List<TracesExporterFactory> traceExporters) {
-        this.traceExporters = traceExporters;
+    public SdkTracerProviderFactory setExporters(List<TracesExporterFactory> exporters) {
+        this.exporters = exporters;
         return this;
     }
 
@@ -138,9 +138,9 @@ public class SdkTracerProviderFactory {
         // A single "none" exporter would suppress the default "console" exporter. Though unlike the agent, having a
         // "none" exporter mixed with others doesn't result in an exception. It will just be ignored
 
-        List<TracesExporterFactory> exporters = this.traceExporters == null || this.traceExporters.isEmpty()
+        List<TracesExporterFactory> exporters = this.exporters == null || this.exporters.isEmpty()
                 ? List.of(new ConsoleTracesExporterFactory())
-                : this.traceExporters;
+                : this.exporters;
 
         return exporters.stream()
                 .map(f -> f.create(meterProvider))

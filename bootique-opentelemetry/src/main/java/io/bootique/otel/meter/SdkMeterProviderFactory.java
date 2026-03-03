@@ -42,8 +42,8 @@ public class SdkMeterProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
-    private Duration metricExportInterval;
-    private List<MetricsExporterFactory> metricExporters;
+    private Duration exportInterval;
+    private List<MetricsExporterFactory> exporters;
 
 
     @Inject
@@ -53,14 +53,14 @@ public class SdkMeterProviderFactory {
     }
 
     @BQConfigProperty("Time interval between the start of two export attempts. The default is '1min'")
-    public SdkMeterProviderFactory setMetricExportInterval(Duration metricExportInterval) {
-        this.metricExportInterval = metricExportInterval;
+    public SdkMeterProviderFactory setExportInterval(Duration exportInterval) {
+        this.exportInterval = exportInterval;
         return this;
     }
 
     @BQConfigProperty
-    public SdkMeterProviderFactory setMetricExporters(List<MetricsExporterFactory> metricExporters) {
-        this.metricExporters = metricExporters;
+    public SdkMeterProviderFactory setExporters(List<MetricsExporterFactory> exporters) {
+        this.exporters = exporters;
         return this;
     }
 
@@ -89,9 +89,9 @@ public class SdkMeterProviderFactory {
         // A single "none" exporter would suppress the default "console" exporter. Though unlike the agent, having a
         // "none" exporter mixed with others doesn't result in an exception. It will just be ignored
 
-        List<MetricsExporterFactory> exporters = this.metricExporters == null || this.metricExporters.isEmpty()
+        List<MetricsExporterFactory> exporters = this.exporters == null || this.exporters.isEmpty()
                 ? List.of(new ConsoleMetricsExporterFactory())
-                : this.metricExporters;
+                : this.exporters;
 
         return exporters.stream()
                 .map(MetricsExporterFactory::create)
@@ -107,8 +107,8 @@ public class SdkMeterProviderFactory {
     }
 
     private java.time.Duration getMetricExportIntervalOrDefault() {
-        return this.metricExportInterval != null
-                ? this.metricExportInterval.getDuration()
+        return this.exportInterval != null
+                ? this.exportInterval.getDuration()
                 : java.time.Duration.ofMinutes(1);
     }
 }

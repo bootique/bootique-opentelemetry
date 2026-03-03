@@ -66,7 +66,7 @@ public class OtlpTracesExporterIT {
 
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.tracerProvider.traceExporters[0].type", "otlp")
+                        .setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "otlp")
                         .setProperty("bq.opentelemetry.otlp.protocol", "grpc")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4317)))
@@ -98,7 +98,7 @@ public class OtlpTracesExporterIT {
         // no need for BQTestFactory, we'll be doing manual shutdown,
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.tracerProvider.traceExporters[0].type", "otlp")
+                        .setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "otlp")
                         .setProperty("bq.opentelemetry.otlp.protocol", "http/protobuf")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4318)))

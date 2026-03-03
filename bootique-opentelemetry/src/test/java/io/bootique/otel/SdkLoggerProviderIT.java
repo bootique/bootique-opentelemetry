@@ -55,7 +55,7 @@ public class SdkLoggerProviderIT {
     public void consoleExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.loggerProvider.logExporters[0].type", "console"))
+                        .setProperty("bq.opentelemetry.loggerProvider.exporters[0].type", "console"))
                 .createRuntime();
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
 
@@ -71,7 +71,7 @@ public class SdkLoggerProviderIT {
     public void noneExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.loggerProvider.logExporters[0].type", "none"))
+                        .setProperty("bq.opentelemetry.loggerProvider.exporters[0].type", "none"))
                 .createRuntime();
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
 

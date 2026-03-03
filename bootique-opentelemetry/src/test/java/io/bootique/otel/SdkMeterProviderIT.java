@@ -42,7 +42,7 @@ public class SdkMeterProviderIT {
     public void defaultExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms"))
+                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "100ms"))
                 .createRuntime();
 
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
@@ -57,8 +57,8 @@ public class SdkMeterProviderIT {
     public void consoleExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms")
-                        .setProperty("bq.opentelemetry.meterProvider.metricExporters[0].type", "console"))
+                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "100ms")
+                        .setProperty("bq.opentelemetry.meterProvider.exporters[0].type", "console"))
                 .createRuntime();
 
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
@@ -73,8 +73,8 @@ public class SdkMeterProviderIT {
     public void noopExporter() {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
-                        .setProperty("bq.opentelemetry.meterProvider.metricExportInterval", "100ms")
-                        .setProperty("bq.opentelemetry.meterProvider.metricExporters[0].type", "none"))
+                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "100ms")
+                        .setProperty("bq.opentelemetry.meterProvider.exporters[0].type", "none"))
                 .createRuntime();
 
         OpenTelemetry otel = runtime.getInstance(OpenTelemetry.class);
