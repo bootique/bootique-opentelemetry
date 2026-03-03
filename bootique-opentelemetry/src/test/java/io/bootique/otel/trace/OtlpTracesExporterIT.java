@@ -25,13 +25,13 @@ import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
@@ -44,38 +44,25 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @BQTest
+@Testcontainers
 public class OtlpTracesExporterIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OtlpTracesExporterIT.class);
 
+    @Container
+    private static final GenericContainer<?> otelCollector = new GenericContainer<>("otel/opentelemetry-collector-contrib:0.95.0")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("otel-collector-config.yaml"), "/etc/otel-collector-config.yaml")
+            .withCommand("--config=/etc/otel-collector-config.yaml")
+            .withExposedPorts(4317, 4318)
+            .waitingFor(Wait.forLogMessage(".*Everything is ready.*", 1).withStartupTimeout(Duration.ofSeconds(30)));
+
+
     @BQTestTool
     private static final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
-    private static GenericContainer<?> otelCollector;
-    private static int lastReadLineCount = 0;
-
-    @BeforeAll
-    static void setupCollector() {
-        otelCollector = new GenericContainer<>("otel/opentelemetry-collector-contrib:0.95.0")
-                .withCopyFileToContainer(
-                        MountableFile.forClasspathResource("otel-collector-config.yaml"),
-                        "/etc/otel-collector-config.yaml")
-                .withCommand("--config=/etc/otel-collector-config.yaml")
-                .withExposedPorts(4317, 4318)
-                .waitingFor(Wait.forLogMessage(".*Everything is ready.*", 1)
-                        .withStartupTimeout(Duration.ofSeconds(30)));
-
-        otelCollector.start();
-    }
-
-    @AfterAll
-    static void teardownCollector() {
-        if (otelCollector != null) {
-            otelCollector.stop();
-        }
-    }
+    private static int lastReadLineCount;
 
     @Test
-    public void testGrpcExport() throws InterruptedException {
+    public void grpcExport() throws InterruptedException {
 
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
@@ -107,7 +94,7 @@ public class OtlpTracesExporterIT {
     }
 
     @Test
-    public void testHttpProtobufExport() throws InterruptedException {
+    public void httpProtobufExport() throws InterruptedException {
         // no need for BQTestFactory, we'll be doing manual shutdown,
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
