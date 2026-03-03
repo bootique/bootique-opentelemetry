@@ -20,7 +20,7 @@ package io.bootique.otel;
 
 /**
  * Defines a subset of variables from the OTel "Environment Variable Specification" that is supported by the Bootique
- * integration. Each var has a Java property equivalent for the var strored in {@link #otelProperty}.
+ * integration. Each var has a Java property equivalent stored in {@link #otelProperty}.
  *
  * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/">Environment Variable
  * Specification</a>
@@ -45,7 +45,10 @@ enum OpenTelemetryVar {
     // TODO: OTEL_EXPORTER_OTLP_TRACES_HEADERS, OTEL_EXPORTER_OTLP_METRICS_HEADERS, OTEL_EXPORTER_OTLP_LOGS_HEADERS
 
     /* Metrics SDK Configuration */
-    OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval");
+    OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval"),
+
+    /* Batch span processor */
+    OTEL_BSP_SCHEDULE_DELAY("otel.bsp.schedule.delay");
 
     public final String otelProperty;
 

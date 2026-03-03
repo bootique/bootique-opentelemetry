@@ -21,6 +21,7 @@ package io.bootique.otel.trace;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.shutdown.ShutdownManager;
+import io.bootique.value.Duration;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -46,12 +47,19 @@ public class SdkTracerProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
+    private Duration scheduleDelay;
     private List<TracesExporterFactory> exporters;
 
     @Inject
     public SdkTracerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
         this.resource = resource;
         this.shutdownManager = shutdownManager;
+    }
+
+    @BQConfigProperty("Time interval between the start of two consecutive exports used by the batch importer. The default is '5sec'")
+    public SdkTracerProviderFactory setScheduleDelay(Duration scheduleDelay) {
+        this.scheduleDelay = scheduleDelay;
+        return this;
     }
 
     @BQConfigProperty
@@ -118,11 +126,11 @@ public class SdkTracerProviderFactory {
         // presumably we don't need to shut down the exporter, as BatchLogRecordProcessor would do it for us
         BatchSpanProcessorBuilder builder = BatchSpanProcessor
                 .builder(composite)
-                .setMeterProvider(meterProvider);
+                .setMeterProvider(meterProvider)
+                .setScheduleDelay(getScheduleDelayOrDefault());
 
         // TODO:
         //  support props for the builder:
-        //   otel.bsp.schedule.delay
         //   otel.bsp.max.queue.size
         //   otel.bsp.max.export.batch.size
         //   otel.bsp.export.timeout
@@ -146,5 +154,13 @@ public class SdkTracerProviderFactory {
                 .map(f -> f.create(meterProvider))
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private java.time.Duration getScheduleDelayOrDefault() {
+        return this.scheduleDelay != null
+                ? this.scheduleDelay.getDuration()
+
+                // per https://opentelemetry.io/docs/languages/java/configuration/#properties-traces
+                : java.time.Duration.ofSeconds(5);
     }
 }
