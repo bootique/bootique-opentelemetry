@@ -21,6 +21,7 @@ package io.bootique.otel.logger;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.shutdown.ShutdownManager;
+import io.bootique.value.Duration;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -46,7 +47,14 @@ public class SdkLoggerProviderFactory {
     private final Resource resource;
     private final ShutdownManager shutdownManager;
 
+    private Duration scheduleDelay;
     private List<LogsExporterFactory> exporters;
+
+    @BQConfigProperty("Time interval between the start of two consecutive exports used by the batch processor. The default is '1sec'")
+    public SdkLoggerProviderFactory setScheduleDelay(Duration scheduleDelay) {
+        this.scheduleDelay = scheduleDelay;
+        return this;
+    }
 
     @BQConfigProperty
     public SdkLoggerProviderFactory setExporters(List<LogsExporterFactory> exporters) {
@@ -116,16 +124,24 @@ public class SdkLoggerProviderFactory {
         // presumably we don't need to shut down the exporter, as BatchLogRecordProcessor would do it for us
         BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor
                 .builder(composite)
-                .setMeterProvider(meterProvider);
+                .setMeterProvider(meterProvider)
+                .setScheduleDelay(getScheduleDelayOrDefault());
 
         // TODO:
         //  support props for the builder:
-        //   schedule.delay
         //   max.queue.size
         //   max.export.batch.size
         //   export.timeout
 
         return shutdownManager.onShutdown(builder.build());
+    }
+
+    private java.time.Duration getScheduleDelayOrDefault() {
+        return this.scheduleDelay != null
+                ? this.scheduleDelay.getDuration()
+
+                // per https://opentelemetry.io/docs/languages/java/configuration/#properties-logs
+                : java.time.Duration.ofSeconds(1);
     }
 
     private List<LogRecordExporterHolder> exporterHolders() {

@@ -48,7 +48,10 @@ enum OpenTelemetryVar {
     OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval"),
 
     /* Batch span processor */
-    OTEL_BSP_SCHEDULE_DELAY("otel.bsp.schedule.delay");
+    OTEL_BSP_SCHEDULE_DELAY("otel.bsp.schedule.delay"),
+
+    /* Batch log record processor */
+    OTEL_BLRP_SCHEDULE_DELAY("otel.blrp.schedule.delay");
 
     public final String otelProperty;
 
