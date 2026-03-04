@@ -20,21 +20,14 @@ package io.bootique.otel;
 
 import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
-import io.bootique.cli.Cli;
-import io.bootique.command.CommandOutcome;
-import io.bootique.command.CommandWithMetadata;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
-import io.bootique.meta.application.CommandMetadata;
 import io.bootique.otel.otlp.OtlpExporterEndpoint;
 import io.bootique.otel.otlp.OtlpProtocol;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @BQTest
 public class OpenTelemetryModuleExtenderIT {
@@ -53,65 +46,5 @@ public class OpenTelemetryModuleExtenderIT {
 
         OtlpExporterEndpoint endpoint = runtime.getInstance(OtlpExporterEndpoint.class);
         assertEquals(OtlpProtocol.grpc, endpoint.protocol());
-    }
-
-    @Test
-    public void enableOpenTelemetryFor_notEnabled() throws InterruptedException {
-        BQRuntime runtime = testFactory.app("--test")
-                .module(b -> BQCoreModule.extend(b).addCommand(TestCommand.class))
-                .createRuntime();
-
-        ByteArrayOutputStream capturedErr = new ByteArrayOutputStream();
-        PrintStream origErr = System.err;
-        System.setErr(new PrintStream(capturedErr));
-        try {
-            CommandOutcome outcome = runtime.run();
-            assertTrue(outcome.isSuccess());
-            Thread.sleep(500);
-            assertFalse(capturedErr.toString().contains("OpenTelemetry started"));
-        } finally {
-            System.setErr(origErr);
-        }
-    }
-
-    @Test
-    public void enableOpenTelemetryFor() throws InterruptedException {
-        BQRuntime runtime = testFactory.app("--test")
-                .module(b -> {
-                    BQCoreModule.extend(b).addCommand(TestCommand.class);
-                    OpenTelemetryModule.extend(b).enableOpenTelemetryFor(TestCommand.class);
-                })
-                .createRuntime();
-
-        ByteArrayOutputStream capturedErr = new ByteArrayOutputStream();
-        PrintStream origErr = System.err;
-        System.setErr(new PrintStream(capturedErr));
-        try {
-            CommandOutcome outcome = runtime.run();
-            assertTrue(outcome.isSuccess());
-            assertFalse(outcome.forkedToBackground());
-
-            // OpenTelemetryCommand runs asynchronously via "alsoRun" - poll for its startup log
-            long deadline = System.currentTimeMillis() + 3_000;
-            while (!capturedErr.toString().contains("OpenTelemetry started")) {
-                if (System.currentTimeMillis() >= deadline) {
-                    fail("Timed out waiting for 'OpenTelemetry started' log");
-                }
-                Thread.sleep(100);
-            }
-        } finally {
-            System.setErr(origErr);
-        }
-    }
-
-    static class TestCommand extends CommandWithMetadata {
-        public TestCommand() {
-            super(CommandMetadata.builder("test").build());
-        }
-
-        @Override
-        public CommandOutcome run(Cli cli) {
-            return CommandOutcome.succeeded();
-        }
     }
 }

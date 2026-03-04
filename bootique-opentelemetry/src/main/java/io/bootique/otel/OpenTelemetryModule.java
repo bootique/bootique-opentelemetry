@@ -18,7 +18,6 @@
  */
 package io.bootique.otel;
 
-import io.bootique.BQCoreModule;
 import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
@@ -30,7 +29,6 @@ import io.bootique.otel.otlp.OtlpExporterEndpointFactory;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.resources.Resource;
-import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -59,7 +57,6 @@ public class OpenTelemetryModule implements BQModule {
 
     @Override
     public void configure(Binder binder) {
-        BQCoreModule.extend(binder).addCommand(OpenTelemetryCommand.class);
     }
 
     @Singleton
@@ -86,11 +83,5 @@ public class OpenTelemetryModule implements BQModule {
     @Provides
     OtlpExporterEndpoint provideOtlpExporterEndpoint(ConfigurationFactory configFactory) {
         return configFactory.config(OtlpExporterEndpointFactory.class, OTLP_CONFIG_PREFIX).create();
-    }
-
-    @Provides
-    @Singleton
-    OpenTelemetryCommand provideOpenTelemetryCommand(Provider<OpenTelemetry> otelProvider) {
-        return new OpenTelemetryCommand(otelProvider);
     }
 }

@@ -21,8 +21,6 @@ package io.bootique.otel;
 import io.bootique.BQCoreModule;
 import io.bootique.BQCoreModuleExtender;
 import io.bootique.ModuleExtender;
-import io.bootique.command.Command;
-import io.bootique.command.CommandDecorator;
 import io.bootique.di.Binder;
 
 /**
@@ -52,11 +50,6 @@ public class OpenTelemetryModuleExtender extends ModuleExtender<OpenTelemetryMod
                 coreExtender.declareVar(v.configPath, v.name());
             }
         }
-        return this;
-    }
-
-    public OpenTelemetryModuleExtender enableOpenTelemetryFor(Class<? extends Command> commandType) {
-        BQCoreModule.extend(binder).decorateCommand(commandType, CommandDecorator.alsoRun(OpenTelemetryCommand.class));
         return this;
     }
 }
