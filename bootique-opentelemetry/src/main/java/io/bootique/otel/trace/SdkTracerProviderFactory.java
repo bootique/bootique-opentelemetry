@@ -44,15 +44,13 @@ import java.util.function.Supplier;
 @BQConfig
 public class SdkTracerProviderFactory {
 
-    private final Resource resource;
     private final ShutdownManager shutdownManager;
 
     private Duration scheduleDelay;
     private List<TracesExporterFactory> exporters;
 
     @Inject
-    public SdkTracerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
-        this.resource = resource;
+    public SdkTracerProviderFactory(ShutdownManager shutdownManager) {
         this.shutdownManager = shutdownManager;
     }
 
@@ -68,7 +66,7 @@ public class SdkTracerProviderFactory {
         return this;
     }
 
-    public SdkTracerProvider create(MeterProvider meterProvider) {
+    public SdkTracerProvider create(Resource resource, MeterProvider meterProvider) {
 
         Supplier<MeterProvider> meterProviderSupplier = () -> meterProvider;
 

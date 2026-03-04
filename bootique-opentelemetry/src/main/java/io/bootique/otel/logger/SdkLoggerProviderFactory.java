@@ -44,7 +44,6 @@ import java.util.function.Supplier;
 @BQConfig
 public class SdkLoggerProviderFactory {
 
-    private final Resource resource;
     private final ShutdownManager shutdownManager;
 
     private Duration scheduleDelay;
@@ -63,12 +62,11 @@ public class SdkLoggerProviderFactory {
     }
 
     @Inject
-    public SdkLoggerProviderFactory(Resource resource, ShutdownManager shutdownManager) {
-        this.resource = resource;
+    public SdkLoggerProviderFactory(ShutdownManager shutdownManager) {
         this.shutdownManager = shutdownManager;
     }
 
-    public SdkLoggerProvider create(MeterProvider meterProvider) {
+    public SdkLoggerProvider create(Resource resource, MeterProvider meterProvider) {
 
         Supplier<MeterProvider> meterProviderSupplier = () -> meterProvider;
 

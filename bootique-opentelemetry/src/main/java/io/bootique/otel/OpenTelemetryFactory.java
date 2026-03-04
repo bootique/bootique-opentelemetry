@@ -26,6 +26,8 @@ import io.bootique.otel.meter.SdkMeterProviderFactory;
 import io.bootique.otel.trace.SdkTracerProviderFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -43,17 +45,22 @@ import jakarta.inject.Inject;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OpenTelemetryFactory {
 
-    private final Resource resource;
     private final ShutdownManager shutdownManager;
 
+    private String serviceName;
     private SdkLoggerProviderFactory loggerProvider;
     private SdkMeterProviderFactory meterProvider;
     private SdkTracerProviderFactory tracerProvider;
 
     @Inject
-    public OpenTelemetryFactory(Resource resource, ShutdownManager shutdownManager) {
-        this.resource = resource;
+    public OpenTelemetryFactory(ShutdownManager shutdownManager) {
         this.shutdownManager = shutdownManager;
+    }
+
+    @BQConfigProperty("OpenTelemetry service name. If not set, the Bootique application name is used.")
+    public OpenTelemetryFactory setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        return this;
     }
 
     @BQConfigProperty
@@ -74,10 +81,16 @@ public class OpenTelemetryFactory {
         return this;
     }
 
-    public OpenTelemetry create() {
-        SdkMeterProvider meterProvider = meterProviderOrDefault().create();
-        SdkTracerProvider tracerProvider = tracerProviderOrDefault().create(meterProvider);
-        SdkLoggerProvider loggerProvider = loggerProviderOrDefault().create(meterProvider);
+    public Resource createResource(String defaultServiceName) {
+        String name = serviceName != null ? serviceName : defaultServiceName;
+        AttributeKey<String> nameKey = AttributeKey.stringKey(OpenTelemetryVar.OTEL_SERVICE_NAME.otelProperty);
+        return Resource.getDefault().merge(Resource.create(Attributes.of(nameKey, name)));
+    }
+
+    public OpenTelemetry create(Resource resource) {
+        SdkMeterProvider meterProvider = meterProviderOrDefault().create(resource);
+        SdkTracerProvider tracerProvider = tracerProviderOrDefault().create(resource, meterProvider);
+        SdkLoggerProvider loggerProvider = loggerProviderOrDefault().create(resource, meterProvider);
 
         return OpenTelemetrySdk
                 .builder()
@@ -90,18 +103,18 @@ public class OpenTelemetryFactory {
     private SdkLoggerProviderFactory loggerProviderOrDefault() {
         return loggerProvider != null
                 ? loggerProvider
-                : new SdkLoggerProviderFactory(resource, shutdownManager);
+                : new SdkLoggerProviderFactory(shutdownManager);
     }
 
     private SdkMeterProviderFactory meterProviderOrDefault() {
         return meterProvider != null
                 ? meterProvider
-                : new SdkMeterProviderFactory(resource, shutdownManager);
+                : new SdkMeterProviderFactory(shutdownManager);
     }
 
     private SdkTracerProviderFactory tracerProviderOrDefault() {
         return tracerProvider != null
                 ? tracerProvider
-                : new SdkTracerProviderFactory(resource, shutdownManager);
+                : new SdkTracerProviderFactory(shutdownManager);
     }
 }

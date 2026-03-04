@@ -39,16 +39,13 @@ import java.util.Objects;
 @BQConfig
 public class SdkMeterProviderFactory {
 
-    private final Resource resource;
     private final ShutdownManager shutdownManager;
 
     private Duration exportInterval;
     private List<MetricsExporterFactory> exporters;
 
-
     @Inject
-    public SdkMeterProviderFactory(Resource resource, ShutdownManager shutdownManager) {
-        this.resource = resource;
+    public SdkMeterProviderFactory(ShutdownManager shutdownManager) {
         this.shutdownManager = shutdownManager;
     }
 
@@ -64,7 +61,7 @@ public class SdkMeterProviderFactory {
         return this;
     }
 
-    public SdkMeterProvider create() {
+    public SdkMeterProvider create(Resource resource) {
         SdkMeterProviderBuilder builder = SdkMeterProvider
                 .builder()
                 .setResource(resource);

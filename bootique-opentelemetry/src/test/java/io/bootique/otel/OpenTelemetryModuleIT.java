@@ -18,6 +18,7 @@
  */
 package io.bootique.otel;
 
+import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
@@ -46,6 +47,15 @@ public class OpenTelemetryModuleIT {
         assertEquals(md.getName(), resource.getAttribute(AttributeKey.stringKey("service.name")));
         assertEquals("opentelemetry", resource.getAttribute(AttributeKey.stringKey("telemetry.sdk.name")));
         assertEquals("java", resource.getAttribute(AttributeKey.stringKey("telemetry.sdk.language")));
+    }
+
+    @Test
+    public void resource_customServiceName() {
+        BQRuntime runtime = testFactory.app()
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.opentelemetry.serviceName", "my-service"))
+                .createRuntime();
+        Resource resource = runtime.getInstance(Resource.class);
+        assertEquals("my-service", resource.getAttribute(AttributeKey.stringKey("service.name")));
     }
 
     @Test

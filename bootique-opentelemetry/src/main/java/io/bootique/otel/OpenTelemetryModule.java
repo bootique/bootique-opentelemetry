@@ -28,8 +28,6 @@ import io.bootique.otel.otlp.OtlpExporterEndpoint;
 import io.bootique.otel.otlp.OtlpExporterEndpointFactory;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import jakarta.inject.Singleton;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -63,14 +61,13 @@ public class OpenTelemetryModule implements BQModule {
 
     @Singleton
     @Provides
-    Resource provideResource(ApplicationMetadata md) {
-        AttributeKey<String> nameKey = AttributeKey.stringKey(OpenTelemetryVar.OTEL_SERVICE_NAME.otelProperty);
-        return Resource.getDefault().merge(Resource.create(Attributes.of(nameKey, md.getName())));
+    Resource provideResource(ConfigurationFactory configFactory, ApplicationMetadata md) {
+        return configFactory.config(OpenTelemetryFactory.class, CONFIG_PREFIX).createResource(md.getName());
     }
 
     @Singleton
     @Provides
-    OpenTelemetry provideOpenTelemetry(ConfigurationFactory configFactory) {
+    OpenTelemetry provideOpenTelemetry(ConfigurationFactory configFactory, Resource resource) {
 
         // reconfigure JUL used by LoggingMetricExporter and friends
         LogManager.getLogManager().reset();
@@ -79,7 +76,7 @@ public class OpenTelemetryModule implements BQModule {
         // If started via agent, use the global singleton. Otherwise, create a Bootique managed instance
         return GlobalOpenTelemetry.isSet()
                 ? GlobalOpenTelemetry.get()
-                : configFactory.config(OpenTelemetryFactory.class, CONFIG_PREFIX).create();
+                : configFactory.config(OpenTelemetryFactory.class, CONFIG_PREFIX).create(resource);
     }
 
     @Singleton

@@ -30,8 +30,7 @@ package io.bootique.otel;
 enum OpenTelemetryVar {
 
     /* General SDK Configuration */
-    // service name is derived from ApplicationMetadata, not a config property
-    OTEL_SERVICE_NAME("service.name", null),
+    OTEL_SERVICE_NAME("service.name", "opentelemetry.serviceName"),
 
     /* Exporter Selection */
     OTEL_TRACES_EXPORTER("traces.exporter", "opentelemetry.tracerProvider.exporters[0].type"),
