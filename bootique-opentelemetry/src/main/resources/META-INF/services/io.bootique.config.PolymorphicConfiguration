@@ -1,6 +1,7 @@
 io.bootique.otel.meter.MetricsExporterFactory
 io.bootique.otel.meter.ConsoleMetricsExporterFactory
 io.bootique.otel.meter.NoneMetricsExporterFactory
+io.bootique.otel.meter.OtlpMetricsExporterFactory
 io.bootique.otel.trace.TracesExporterFactory
 io.bootique.otel.trace.ConsoleTracesExporterFactory
 io.bootique.otel.trace.NoneTracesExporterFactory
@@ -8,3 +9,4 @@ io.bootique.otel.trace.OtlpTracesExporterFactory
 io.bootique.otel.logger.LogsExporterFactory
 io.bootique.otel.logger.ConsoleLogsExporterFactory
 io.bootique.otel.logger.NoneLogsExporterFactory
+io.bootique.otel.logger.OtlpLogsExporterFactory

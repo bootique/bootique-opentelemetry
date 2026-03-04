@@ -16,3 +16,11 @@ service:
       receivers: [otlp]
       processors: []
       exporters: [logging]
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [logging]
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [logging]
