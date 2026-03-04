@@ -67,7 +67,7 @@ public class OtlpTracesExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "otlp")
-                        .setProperty("bq.opentelemetry.tracerProvider.scheduleDelay", "500ms")
+                        .setProperty("bq.opentelemetry.tracerProvider.scheduleDelay", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "grpc")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4317)))
@@ -81,7 +81,7 @@ public class OtlpTracesExporterIT {
                 .startSpan();
         testSpan.end();
 
-        List<SpanInfo> spans = readExportedSpans(8_000L);
+        List<SpanInfo> spans = readExportedSpans(5_000L);
 
         assertFalse(spans.isEmpty(), "Expected at least one span to be exported");
 
@@ -100,7 +100,7 @@ public class OtlpTracesExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.tracerProvider.exporters[0].type", "otlp")
-                        .setProperty("bq.opentelemetry.tracerProvider.scheduleDelay", "500ms")
+                        .setProperty("bq.opentelemetry.tracerProvider.scheduleDelay", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "http/protobuf")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4318)))
@@ -114,7 +114,7 @@ public class OtlpTracesExporterIT {
                 .startSpan();
         testSpan.end();
 
-        List<SpanInfo> spans = readExportedSpans(8_000L);
+        List<SpanInfo> spans = readExportedSpans(5_000L);
 
         assertFalse(spans.isEmpty(), "Expected at least one span to be exported");
 
@@ -129,7 +129,7 @@ public class OtlpTracesExporterIT {
 
     private List<SpanInfo> readExportedSpans(long timeoutMs) throws InterruptedException {
 
-        long sleep = timeoutMs < 500 ? timeoutMs : 500;
+        long sleep = timeoutMs < 200 ? timeoutMs : 200;
         long tries = timeoutMs / sleep + (timeoutMs % sleep > 0 ? 1 : 0);
 
         for (int i = 0; i < tries; i++) {

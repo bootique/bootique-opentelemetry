@@ -60,7 +60,7 @@ public class OtlpMetricsExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.meterProvider.exporters[0].type", "otlp")
-                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "500ms")
+                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "grpc")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4317)))
@@ -70,7 +70,7 @@ public class OtlpMetricsExporterIT {
         LongCounter counter = otel.getMeter("test-meter").counterBuilder("test-counter-grpc").build();
         counter.add(5);
 
-        assertTrue(readExportedMetrics(8_000L, "test-counter-grpc"), "Expected 'test-counter-grpc' to be exported");
+        assertTrue(readExportedMetrics(5_000L, "test-counter-grpc"), "Expected 'test-counter-grpc' to be exported");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class OtlpMetricsExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.meterProvider.exporters[0].type", "otlp")
-                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "500ms")
+                        .setProperty("bq.opentelemetry.meterProvider.exportInterval", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "http/protobuf")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4318)))
@@ -89,12 +89,12 @@ public class OtlpMetricsExporterIT {
         LongCounter counter = otel.getMeter("test-meter").counterBuilder("test-counter-http").build();
         counter.add(3);
 
-        assertTrue(readExportedMetrics(8_000L, "test-counter-http"), "Expected 'test-counter-http' to be exported");
+        assertTrue(readExportedMetrics(5_000L, "test-counter-http"), "Expected 'test-counter-http' to be exported");
     }
 
     private boolean readExportedMetrics(long timeoutMs, String metricName) throws InterruptedException {
 
-        long sleep = timeoutMs < 500 ? timeoutMs : 500;
+        long sleep = timeoutMs < 200 ? timeoutMs : 200;
         long tries = timeoutMs / sleep + (timeoutMs % sleep > 0 ? 1 : 0);
 
         for (int i = 0; i < tries; i++) {

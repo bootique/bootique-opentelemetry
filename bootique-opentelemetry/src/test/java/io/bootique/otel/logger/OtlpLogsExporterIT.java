@@ -59,6 +59,7 @@ public class OtlpLogsExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.loggerProvider.exporters[0].type", "otlp")
+                        .setProperty("bq.opentelemetry.loggerProvider.scheduleDelay", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "grpc")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4317)))
@@ -70,7 +71,7 @@ public class OtlpLogsExporterIT {
                 .setBody("test-log-body-grpc")
                 .emit();
 
-        assertTrue(readExportedLogs(8_000L, "test-log-body-grpc"), "Expected 'test-log-body-grpc' to be exported");
+        assertTrue(readExportedLogs(5_000L, "test-log-body-grpc"), "Expected 'test-log-body-grpc' to be exported");
     }
 
     @Test
@@ -79,6 +80,7 @@ public class OtlpLogsExporterIT {
         BQRuntime runtime = testFactory.app()
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.opentelemetry.loggerProvider.exporters[0].type", "otlp")
+                        .setProperty("bq.opentelemetry.loggerProvider.scheduleDelay", "200ms")
                         .setProperty("bq.opentelemetry.otlp.protocol", "http/protobuf")
                         .setProperty("bq.opentelemetry.otlp.url",
                                 "http://localhost:" + otelCollector.getMappedPort(4318)))
@@ -90,12 +92,12 @@ public class OtlpLogsExporterIT {
                 .setBody("test-log-body-http")
                 .emit();
 
-        assertTrue(readExportedLogs(8_000L, "test-log-body-http"), "Expected 'test-log-body-http' to be exported");
+        assertTrue(readExportedLogs(5_000L, "test-log-body-http"), "Expected 'test-log-body-http' to be exported");
     }
 
     private boolean readExportedLogs(long timeoutMs, String logBody) throws InterruptedException {
 
-        long sleep = timeoutMs < 500 ? timeoutMs : 500;
+        long sleep = timeoutMs < 200 ? timeoutMs : 200;
         long tries = timeoutMs / sleep + (timeoutMs % sleep > 0 ? 1 : 0);
 
         for (int i = 0; i < tries; i++) {
