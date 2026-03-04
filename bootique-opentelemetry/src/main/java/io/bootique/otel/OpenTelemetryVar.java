@@ -20,7 +20,8 @@ package io.bootique.otel;
 
 /**
  * Defines a subset of variables from the OTel "Environment Variable Specification" that is supported by the Bootique
- * integration. Each var has a Java property equivalent stored in {@link #otelProperty}.
+ * integration. Each var has a Java property equivalent stored in {@link #otelProperty} and a Bootique configuration
+ * path stored in {@link #configPath} (null if there is no direct Bootique config equivalent).
  *
  * @see <a href="https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/">Environment Variable
  * Specification</a>
@@ -29,33 +30,40 @@ package io.bootique.otel;
 enum OpenTelemetryVar {
 
     /* General SDK Configuration */
-    OTEL_SERVICE_NAME("service.name"),
+    // service name is derived from ApplicationMetadata, not a config property
+    OTEL_SERVICE_NAME("service.name", null),
 
     /* Exporter Selection */
-    OTEL_TRACES_EXPORTER("traces.exporter"),
-    OTEL_METRICS_EXPORTER("metrics.exporter"),
-    OTEL_LOGS_EXPORTER("logs.exporter"),
+    OTEL_TRACES_EXPORTER("traces.exporter", "opentelemetry.tracerProvider.exporters[0].type"),
+    OTEL_METRICS_EXPORTER("metrics.exporter", "opentelemetry.meterProvider.exporters[0].type"),
+    OTEL_LOGS_EXPORTER("logs.exporter", "opentelemetry.loggerProvider.exporters[0].type"),
 
     /* OTLP Exporter */
-    OTEL_EXPORTER_OTLP_ENDPOINT("exporter.otlp.endpoint"),
+    OTEL_EXPORTER_OTLP_ENDPOINT("exporter.otlp.endpoint", "opentelemetry.otlp.url"),
     // TODO: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT OTEL_EXPORTER_OTLP_METRICS_ENDPOINT OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
-    OTEL_EXPORTER_OTLP_PROTOCOL("exporter.otlp.protocol"),
+    OTEL_EXPORTER_OTLP_PROTOCOL("exporter.otlp.protocol", "opentelemetry.otlp.protocol"),
     // TODO: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL, OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, OTEL_EXPORTER_OTLP_LOGS_PROTOCOL
-    OTEL_EXPORTER_OTLP_HEADERS("exporter.otlp.headers"),
+    OTEL_EXPORTER_OTLP_HEADERS("exporter.otlp.headers", "opentelemetry.otlp.headers"),
     // TODO: OTEL_EXPORTER_OTLP_TRACES_HEADERS, OTEL_EXPORTER_OTLP_METRICS_HEADERS, OTEL_EXPORTER_OTLP_LOGS_HEADERS
 
     /* Metrics SDK Configuration */
-    OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval"),
+    OTEL_METRIC_EXPORT_INTERVAL("metric.export.interval", "opentelemetry.meterProvider.exportInterval"),
 
     /* Batch span processor */
-    OTEL_BSP_SCHEDULE_DELAY("otel.bsp.schedule.delay"),
+    OTEL_BSP_SCHEDULE_DELAY("otel.bsp.schedule.delay", "opentelemetry.tracerProvider.scheduleDelay"),
 
     /* Batch log record processor */
-    OTEL_BLRP_SCHEDULE_DELAY("otel.blrp.schedule.delay");
+    OTEL_BLRP_SCHEDULE_DELAY("otel.blrp.schedule.delay", "opentelemetry.loggerProvider.scheduleDelay");
 
     public final String otelProperty;
 
-    OpenTelemetryVar(String otelProperty) {
+    /**
+     * A dot-separated Bootique configuration path bound to this variable, or null if there is no direct equivalent.
+     */
+    public final String configPath;
+
+    OpenTelemetryVar(String otelProperty, String configPath) {
         this.otelProperty = otelProperty;
+        this.configPath = configPath;
     }
 }

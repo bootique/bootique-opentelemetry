@@ -41,6 +41,10 @@ import java.util.logging.LogManager;
  */
 public class OpenTelemetryModule implements BQModule {
 
+    public static OpenTelemetryModuleExtender extend(Binder binder) {
+        return new OpenTelemetryModuleExtender(binder).initAllExtensions();
+    }
+
     private static final String CONFIG_PREFIX = "opentelemetry";
     private static final String OTLP_CONFIG_PREFIX = CONFIG_PREFIX + ".otlp";
 

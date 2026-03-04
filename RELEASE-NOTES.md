@@ -5,4 +5,5 @@
 * #3 Injectable OTel Resource with Bootique application name
 * #4 Configurable SdkMeterProvider
 * #5 Configurable SdkLoggerProvider
+* #7 Auto-declare config vars
 
