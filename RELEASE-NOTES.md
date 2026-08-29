@@ -1,3 +1,7 @@
+## 4.0-M6
+
+* #8 Upgrade to opentelemetry 1.65.0
+
 ## 4.0-M4
 
 * #1 OpenTelemetry bootstrap
